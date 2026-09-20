@@ -248,13 +248,23 @@ def render_timeframe_charts(symbol: str, timeframe_seconds: int) -> None:
     st.subheader(f"{symbol} · {timeframe_seconds // 60} min view")
     st.line_chart(history.set_index("timestamp")["price"], height=220)
 
-    cols = st.columns(3)
+    positive_positions = history.loc[history["position"] > 0, "position"]
+    negative_positions = history.loc[history["position"] < 0, "position"]
+    st.markdown("#### Position activity in selected timeframe")
+    position_chart = history.set_index("timestamp")[["position"]]
+    st.bar_chart(position_chart, height=180)
+
+    cols = st.columns(5)
     with cols[0]:
         st.metric("Latest Price", f"${history['price'].iloc[-1]:,.2f}")
     with cols[1]:
         st.metric("Range", f"{history['price'].min():,.2f} → {history['price'].max():,.2f}")
     with cols[2]:
         st.metric("Avg Momentum", f"{history['momentum'].mean():.3f}")
+    with cols[3]:
+        st.metric("Positive Position", f"{len(positive_positions)} times", f"Total +{positive_positions.sum():,.0f}")
+    with cols[4]:
+        st.metric("Negative Position", f"{len(negative_positions)} times", f"Total {negative_positions.sum():,.0f}")
 
 
 def main() -> None:
